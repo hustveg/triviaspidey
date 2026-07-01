@@ -9,6 +9,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const crypto = require('crypto');
 const QRCode = require('qrcode');
 const { Server } = require('socket.io');
 
@@ -32,6 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // rooms = {
 //   "AB12CD": {
 //     code, hostSocketId,
+//     hostToken,                   // secreto que identifica al host real (para reconexion)
 //     players: [{ playerId, socketId, name, score, hasAnswered, lastAnswerCorrect }],
 //     state: 'lobby' | 'question' | 'reveal' | 'leaderboard' | 'ended',
 //     currentQuestionIndex: -1,
@@ -42,6 +44,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 //   }
 // }
 const rooms = {};
+
+// Genera un token secreto largo para identificar al host de una sala.
+// El navegador del host lo guarda (sessionStorage) para poder reconectarse
+// automaticamente si recarga la pagina, sin perder el control de la sala.
+function generateHostToken() {
+  return crypto.randomBytes(20).toString('hex');
+}
 
 // Genera un codigo corto de 6 caracteres (sin 0/O/1/I para evitar confusiones)
 function generateRoomCode() {
@@ -185,9 +194,11 @@ io.on('connection', (socket) => {
   // --- HOST: crear sala ---
   socket.on('createRoom', () => {
     const code = generateRoomCode();
+    const hostToken = generateHostToken();
     rooms[code] = {
       code,
       hostSocketId: socket.id,
+      hostToken,
       players: [],
       state: 'lobby',
       currentQuestionIndex: -1,
@@ -197,7 +208,42 @@ io.on('connection', (socket) => {
       questionTimer: null
     };
     socket.join(code);
-    socket.emit('roomCreated', { code });
+    socket.emit('roomCreated', { code, hostToken });
+  });
+
+  // --- HOST: reconectarse a una sala que ya existia (recargo la pagina) ---
+  socket.on('reconnectHost', ({ code, hostToken }) => {
+    code = (code || '').toUpperCase().trim();
+    const room = rooms[code];
+
+    // Si la sala ya no existe (se reinicio el servidor) o el token no coincide,
+    // no dejamos reconectar: el cliente debera crear una sala nueva.
+    if (!room || room.hostToken !== hostToken) {
+      socket.emit('hostReconnectFailed');
+      return;
+    }
+
+    room.hostSocketId = socket.id;
+    socket.join(code);
+
+    // Le mandamos al host toda la informacion necesaria para reconstruir
+    // exactamente la pantalla en la que estaba (lobby, pregunta, leaderboard o final).
+    socket.emit('hostReconnected', {
+      code,
+      hostToken,
+      state: room.state,
+      players: room.players.map((p) => ({ name: p.name, score: p.score })),
+      count: room.players.length,
+      max: MAX_PLAYERS,
+      questionIndex: room.currentQuestionIndex,
+      total: questions.length,
+      question: room.state === 'question' ? getSafeQuestion(room) : null,
+      answeredCount: room.state === 'question' ? room.players.filter((p) => p.hasAnswered).length : null,
+      leaderboard: (room.state === 'reveal' || room.state === 'leaderboard')
+        ? buildLeaderboard(room)
+        : (room.state === 'ended' ? buildLeaderboard(room) : null),
+      isFinal: room.currentQuestionIndex === questions.length - 1
+    });
   });
 
   // --- HOST: pide el QR de una sala que ya creo ---
