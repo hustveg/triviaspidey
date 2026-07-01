@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spider Trivia - Host</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="web-background"></div>
+
+  <div class="app-shell">
+
+    <h1 class="hero-title">Spider Trivia</h1>
+    <p class="hero-subtitle">Pantalla del host / proyector</p>
+
+    <div id="errorBanner" class="error-banner hidden"></div>
+
+    <!-- ===================== PANTALLA 1: CREAR SALA ===================== -->
+    <section id="screen-create" class="card center-text">
+      <h2>Crear nueva sala</h2>
+      <p class="status-text">Presiona el boton para generar un codigo de sala y un QR para tus jugadores.</p>
+      <button id="btnCreateRoom" class="btn btn-primary btn-block">Crear sala</button>
+    </section>
+
+    <!-- ===================== PANTALLA 2: LOBBY (sala creada, esperando jugadores) ===================== -->
+    <section id="screen-lobby" class="card wide center-text hidden">
+      <h2>Codigo de sala</h2>
+      <div id="roomCode" class="room-code">------</div>
+
+      <div class="qr-box">
+        <img id="qrImage" src="" alt="QR para unirse" />
+      </div>
+      <p class="status-text">Escanea el QR o entra a <strong id="joinUrlText"></strong></p>
+
+      <div class="counter-pill"><span id="playerCount">0</span> / 30 jugadores</div>
+
+      <ul id="playerList" class="player-list"></ul>
+
+      <button id="btnStartGame" class="btn btn-primary btn-block mt-16" disabled>
+        Iniciar trivia
+      </button>
+    </section>
+
+    <!-- ===================== PANTALLA 3: PREGUNTA ===================== -->
+    <section id="screen-question" class="card wide hidden">
+      <div class="counter-pill" id="questionCounter">Pregunta 1 / 10</div>
+
+      <div class="timer-wrap">
+        <div id="timerCircle" class="timer-circle">20</div>
+      </div>
+
+      <h2 id="questionText" class="question-text"></h2>
+
+      <img id="questionImage" class="question-image hidden" src="" alt="Imagen de la pregunta" />
+      <div id="imagePlaceholder" class="image-placeholder">Sin imagen para esta pregunta</div>
+
+      <div id="optionsGrid" class="options-grid"></div>
+
+      <p class="status-text mt-16">
+        Respondieron: <span id="answeredCount">0</span> / <span id="totalPlayers">0</span>
+      </p>
+    </section>
+
+    <!-- ===================== PANTALLA 4: LEADERBOARD PARCIAL ===================== -->
+    <section id="screen-leaderboard" class="card wide hidden">
+      <h2 class="center-text">Tabla de posiciones</h2>
+      <ul id="leaderboardList" class="leaderboard-list"></ul>
+      <button id="btnNextQuestion" class="btn btn-primary btn-block mt-16">Siguiente pregunta</button>
+    </section>
+
+    <!-- ===================== PANTALLA 5: RANKING FINAL ===================== -->
+    <section id="screen-final" class="card wide hidden">
+      <h2 class="center-text">Ranking final</h2>
+      <div id="podium" class="podium"></div>
+      <ul id="finalListRest" class="leaderboard-list"></ul>
+      <button id="btnNewGame" class="btn btn-secondary btn-block mt-16">Crear otra sala</button>
+    </section>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="host.js"></script>
+</body>
+</html>

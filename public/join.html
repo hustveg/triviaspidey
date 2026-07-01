@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Spider Trivia - Jugador</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="web-background"></div>
+
+  <div class="app-shell">
+
+    <h1 class="hero-title" style="font-size:32px;">Spider Trivia</h1>
+
+    <div id="errorBanner" class="error-banner hidden"></div>
+
+    <!-- ===================== PANTALLA 1: UNIRSE ===================== -->
+    <section id="screen-join" class="card center-text">
+      <h2>Unirse a la sala</h2>
+      <input id="inputCode" class="input" type="text" maxlength="6" placeholder="Codigo de sala (ej: AB12CD)" style="text-transform:uppercase;" />
+      <input id="inputName" class="input" type="text" maxlength="18" placeholder="Tu nombre o nickname" />
+      <button id="btnJoin" class="btn btn-primary btn-block">Entrar a la sala</button>
+    </section>
+
+    <!-- ===================== PANTALLA 2: SALA DE ESPERA ===================== -->
+    <section id="screen-waiting" class="card center-text hidden">
+      <h2>¡Estas dentro!</h2>
+      <p class="status-text">Hola, <strong id="waitingName"></strong> 🕸️</p>
+      <p class="status-text mt-16">Esperando que el host inicie la trivia...</p>
+    </section>
+
+    <!-- ===================== PANTALLA 3: PREGUNTA ===================== -->
+    <section id="screen-question" class="card center-text hidden">
+      <div class="timer-wrap">
+        <div id="timerCircle" class="timer-circle">20</div>
+      </div>
+      <h2 id="questionText" class="question-text"></h2>
+      <div id="optionsGrid" class="options-grid"></div>
+    </section>
+
+    <!-- ===================== PANTALLA 4: RESPUESTA ENVIADA / ESPERANDO REVEAL ===================== -->
+    <section id="screen-locked" class="card center-text hidden">
+      <p class="answer-confirm">✅ ¡Respuesta enviada!</p>
+      <p class="status-text mt-16">Esperando a los demas jugadores...</p>
+    </section>
+
+    <!-- ===================== PANTALLA 5: RESULTADO DE LA PREGUNTA ===================== -->
+    <section id="screen-result" class="card center-text hidden">
+      <h2 id="resultTitle"></h2>
+      <p id="resultScore" class="status-text"></p>
+    </section>
+
+    <!-- ===================== PANTALLA 6: LEADERBOARD PARCIAL ===================== -->
+    <section id="screen-leaderboard" class="card center-text hidden">
+      <h2>Posiciones</h2>
+      <ul id="leaderboardList" class="leaderboard-list"></ul>
+    </section>
+
+    <!-- ===================== PANTALLA 7: FINAL ===================== -->
+    <section id="screen-final" class="card center-text hidden">
+      <h2>¡Trivia terminada!</h2>
+      <p id="finalPosition" class="status-text" style="font-size:20px;"></p>
+      <p id="finalScore" class="status-text"></p>
+    </section>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="player.js"></script>
+</body>
+</html>

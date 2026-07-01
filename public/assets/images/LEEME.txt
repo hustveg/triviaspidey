@@ -1,0 +1,11 @@
+Coloca aquí tus propias imágenes (sin copyright) para las preguntas de trivia.
+
+Formatos recomendados: .jpg, .png, .webp
+Tamaño recomendado: 800x450px aprox (proporción 16:9) para que se vean bien en el proyector.
+
+Luego, en data/questions.js, referencia la imagen así:
+  image: "assets/images/nombre-de-tu-imagen.jpg"
+
+Si dejas "image: null" en una pregunta, el sistema muestra automáticamente
+un placeholder con la textura de telaraña — no es necesario tener imagen
+para todas las preguntas.
