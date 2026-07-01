@@ -127,14 +127,15 @@ function revealAnswer(room) {
     results
   });
 
-  // Pequeña pausa antes de mandar el leaderboard, para que se vea la animacion de reveal
+  // Pausa de 5 segundos antes de mandar el leaderboard, para darle tiempo
+  // al jugador/host de leer cual era la respuesta correcta antes de avanzar.
   setTimeout(() => {
     room.state = 'leaderboard';
     io.to(room.code).emit('showLeaderboard', {
       leaderboard: buildLeaderboard(room),
       isFinal: room.currentQuestionIndex === questions.length - 1
     });
-  }, 1500);
+  }, 5000);
 }
 
 // Avanza a la siguiente pregunta de la sala (o termina el juego)
