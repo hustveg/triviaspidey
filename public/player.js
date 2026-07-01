@@ -146,20 +146,24 @@ socket.on('answerLocked', () => {
 });
 
 // ---- Resultado individual al revelar ----
-socket.on('revealAnswer', ({ results }) => {
+socket.on('revealAnswer', ({ results, correctAnswerText }) => {
   const me = results.find((r) => r.name === myName);
   if (!me) return;
 
   showScreen('result');
   const title = document.getElementById('resultTitle');
   const scoreText = document.getElementById('resultScore');
+  const correctAnswerEl = document.getElementById('resultCorrectAnswer');
 
   if (me.correct) {
     title.textContent = '✅ ¡Correcto!';
     title.style.color = '#19c37d';
+    correctAnswerEl.classList.add('hidden');
   } else {
     title.textContent = '❌ Incorrecto';
     title.style.color = '#d61f26';
+    correctAnswerEl.textContent = `La respuesta correcta era: ${correctAnswerText}`;
+    correctAnswerEl.classList.remove('hidden');
   }
   scoreText.textContent = `Tu puntaje total: ${me.score} pts`;
 });

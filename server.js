@@ -123,6 +123,7 @@ function revealAnswer(room) {
 
   io.to(room.code).emit('revealAnswer', {
     correctIndex: room.currentCorrectIndex, // indice ya mezclado de esta partida
+    correctAnswerText: room.currentShuffledOptions[room.currentCorrectIndex],
     results
   });
 
