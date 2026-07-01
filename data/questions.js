@@ -3,6 +3,23 @@
 // IMPORTANTE: este archivo NO esta dentro de /public a proposito.
 // Si estuviera en /public, cualquier jugador podria abrir la URL
 // directamente en el navegador y ver "correctIndex" antes de jugar.
+//
+// Sobre las imagenes: no se incluyen imagenes de Spider-Man, Marvel,
+// peliculas o actores porque son propiedad de Disney/Marvel/los estudios
+// (no son de uso libre aunque aparezcan en una busqueda). Todas quedan
+// con image: null, lo que muestra automaticamente el placeholder con
+// textura de telarana. Si quieres agregar tus propias imagenes (fotos
+// libres de arañas, ciudad de noche, etc.), ponlas en
+// public/assets/images/ y cambia el campo "image" de la pregunta.
+//
+// Preguntas 1-9: traducidas del ingles / mejoradas, con respuestas
+// investigadas y verificadas (Wikipedia, Marvel.com, Britannica).
+// Preguntas 10-19: tal como las enviaste, ya traian su respuesta correcta.
+//
+// NOTA: se omitio la pregunta "which villain claims to have the
+// proportional strength of a spider" porque no se pudo verificar un
+// villano concreto con esa caracteristica exacta en ninguna fuente
+// confiable. Si me confirmas de donde la sacaste, la agrego despues.
 
 module.exports = [
   {

@@ -35,6 +35,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 //     players: [{ playerId, socketId, name, score, hasAnswered, lastAnswerCorrect }],
 //     state: 'lobby' | 'question' | 'reveal' | 'leaderboard' | 'ended',
 //     currentQuestionIndex: -1,
+//     currentShuffledOptions: [],  // opciones ya mezcladas de la pregunta actual
+//     currentCorrectIndex: null,   // indice correcto YA mezclado para esta partida
 //     questionStartTime: null,
 //     questionTimer: null
 //   }
@@ -54,12 +56,32 @@ function generateRoomCode() {
   return code;
 }
 
-// Devuelve la pregunta actual SIN el campo correctIndex (para mandar al cliente)
+// Mezcla las opciones de una pregunta usando el algoritmo Fisher-Yates,
+// y devuelve tanto las opciones ya mezcladas como el nuevo indice de la
+// respuesta correcta (que ya NO sera siempre 0). Esto se calcula cada vez
+// que se muestra la pregunta, asi que ademas queda distinto cada partida.
+function shuffleOptions(question) {
+  const indices = question.options.map((_, i) => i); // [0,1,2,3]
+
+  // Fisher-Yates shuffle
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  const shuffledOptions = indices.map((originalIndex) => question.options[originalIndex]);
+  const newCorrectIndex = indices.indexOf(question.correctIndex);
+
+  return { shuffledOptions, newCorrectIndex };
+}
+
+// Devuelve la pregunta actual SIN el campo correctIndex (para mandar al cliente),
+// con las opciones ya mezcladas segun lo guardado en la sala.
 function getSafeQuestion(room) {
   const q = questions[room.currentQuestionIndex];
   if (!q) return null;
-  const { correctIndex, ...safeQuestion } = q;
-  return safeQuestion;
+  const { correctIndex, options, ...rest } = q;
+  return { ...rest, options: room.currentShuffledOptions };
 }
 
 // Calcula el puntaje segun el tiempo que tardo en responder
@@ -92,7 +114,6 @@ function clearRoomTimer(room) {
 function revealAnswer(room) {
   clearRoomTimer(room);
   room.state = 'reveal';
-  const q = questions[room.currentQuestionIndex];
 
   const results = room.players.map((p) => ({
     name: p.name,
@@ -101,7 +122,7 @@ function revealAnswer(room) {
   }));
 
   io.to(room.code).emit('revealAnswer', {
-    correctIndex: q.correctIndex,
+    correctIndex: room.currentCorrectIndex, // indice ya mezclado de esta partida
     results
   });
 
@@ -134,6 +155,13 @@ function advanceQuestion(room) {
     p.lastAnswerCorrect = false;
   });
 
+  // Mezclamos las opciones de ESTA pregunta para ESTA partida, y guardamos
+  // el resultado en la sala para poder validar respuestas y revelar despues.
+  const currentQuestionData = questions[room.currentQuestionIndex];
+  const { shuffledOptions, newCorrectIndex } = shuffleOptions(currentQuestionData);
+  room.currentShuffledOptions = shuffledOptions;
+  room.currentCorrectIndex = newCorrectIndex;
+
   const safeQuestion = getSafeQuestion(room);
   io.to(room.code).emit('showQuestion', {
     question: safeQuestion,
@@ -161,6 +189,8 @@ io.on('connection', (socket) => {
       players: [],
       state: 'lobby',
       currentQuestionIndex: -1,
+      currentShuffledOptions: [],
+      currentCorrectIndex: null,
       questionStartTime: null,
       questionTimer: null
     };
@@ -276,7 +306,7 @@ io.on('connection', (socket) => {
 
     const q = questions[room.currentQuestionIndex];
     const msElapsed = Date.now() - room.questionStartTime;
-    const isCorrect = answerIndex === q.correctIndex;
+    const isCorrect = answerIndex === room.currentCorrectIndex;
 
     player.hasAnswered = true;
     player.lastAnswerCorrect = isCorrect;
